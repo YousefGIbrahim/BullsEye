@@ -25,7 +25,7 @@ class MatchingChecks(unittest.TestCase):
     def test_no_key_uses_local_directory(self):
         self.assertFalse(match("rent a suit")["live"])
 
-    @patch.dict(os.environ, {"OPENAI_API_KEY": "unit-check-not-a-real-key"})
+    @patch.dict(os.environ, {"GEMINI_API_KEY": "unit-check-not-a-real-key"})
     @patch("urllib.request.urlopen", side_effect=TimeoutError)
     def test_timeout_falls_back(self, _):
         self.assertEqual(match("rent a suit")["service_id"], "suit-a-bull")

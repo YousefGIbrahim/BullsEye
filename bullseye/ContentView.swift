@@ -1,4 +1,5 @@
 import SwiftUI
+import WebKit
 
 struct ContentView: View {
     @State private var store = CampusStore()
@@ -6,6 +7,8 @@ struct ContentView: View {
     @State private var query = ""
     @State private var submitted = ""
     @State private var services: [CampusService] = []
+    @State private var webAnswer: GeminiClient.WebAnswer?
+    @AppStorage("matcherStatus") private var matcherStatus = "Local directory"
     @State private var searching = false
     @State private var searchTask: Task<Void, Never>?
     @FocusState private var searchFocused: Bool
@@ -33,6 +36,13 @@ struct ContentView: View {
                         StatusNote(text: "Indoor coverage grows with your campus. Publish a mapped room to make it searchable.", icon: "point.topleft.down.to.point.bottomright.curvepath")
                     }
                 } else {
+                    if searching {
+                        ProgressView("Searching the web…")
+                    } else if let webAnswer {
+                        WebAnswerView(answer: webAnswer)
+                    } else {
+                        StatusNote(text: matcherStatus, icon: "globe")
+                    }
                     SearchResults(store: store, query: submitted, services: services)
                 }
                 NavigationLink { MapLibrary(store: store) } label: {
@@ -41,13 +51,11 @@ struct ContentView: View {
                 NavigationLink { SuggestionForm(store: store) } label: {
                     Label("Suggest a location", systemImage: "plus.bubble").frame(minHeight: 44)
                 }
-                #if DEBUG
-                NavigationLink("Debug settings") { DebugSettings() }.font(.footnote).frame(minHeight: 44)
-                #endif
+                NavigationLink("AI settings") { AISettings() }.font(.footnote).frame(minHeight: 44)
             }
             .toolbar(.hidden, for: .navigationBar)
             .onChange(of: audio.transcript) { _, value in if !value.isEmpty { query = value } }
-            .onDisappear { audio.stop(); searchTask?.cancel() }
+            .onDisappear { audio.stop(); searchTask?.cancel(); searching = false }
         }.tint(CampusTheme.ink)
     }
 
@@ -56,16 +64,15 @@ struct ContentView: View {
         searchFocused = false
         let text = query.trimmed
         submitted = text
+        webAnswer = nil
         services = CampusService.matching(text)
         searchTask?.cancel()
         guard !text.isEmpty else { searching = false; return }
-        // Exact room queries never leave the phone.
-        guard !text.searchKey.contains(where: { $0.isNumber }) else { searching = false; return }
         searching = true
         searchTask = Task {
-            let result = await ServiceMatcher.match(text)
+            let result = await ServiceMatcher.search(text)
             guard !Task.isCancelled, submitted == text else { return }
-            if let result { services = result }
+            webAnswer = result
             searching = false
         }
     }
@@ -170,7 +177,82 @@ struct SearchResults: View {
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 16))
             if matches.isEmpty && services.isEmpty {
-                StatusNote(text: "No published room or matching service found. Try a building code and room number, or suggest the location.", icon: "magnifyingglass")
+                StatusNote(text: "No saved indoor route or bundled service matches this search. Web results do not add indoor map coverage.", icon: "magnifyingglass")
+            }
+        }
+    }
+}
+
+struct WebAnswerView: View {
+    let answer: GeminiClient.WebAnswer
+    @State private var showInformation = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(answer.locationTitle, systemImage: "mappin.circle.fill")
+                .font(.title2.bold())
+                .fixedSize(horizontal: false, vertical: true)
+            DisclosureGroup(isExpanded: $showInformation) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Web answer · Google Search", systemImage: "globe").font(.subheadline)
+                    Text(answer.text).textSelection(.enabled)
+                    Text("Sources").font(.subheadline.bold())
+                    ForEach(answer.sources) { source in
+                        Link("[\(source.id + 1)] \(source.title)", destination: source.url)
+                            .frame(minHeight: 44, alignment: .leading)
+                    }
+                    if let html = answer.searchSuggestions, !html.isEmpty {
+                        GoogleSearchSuggestions(html: html)
+                            .frame(height: 160)
+                            .accessibilityLabel("Google Search suggestions")
+                    }
+                    Text("Confirm room details with the linked source. Indoor guidance is available only for saved, published rooms below.")
+                        .font(.caption).foregroundStyle(CampusTheme.muted)
+                }.padding(.top, 8)
+            } label: {
+                Text(showInformation ? "Less information" : "More information")
+                    .font(.headline).frame(minHeight: 44)
+            }
+        }
+        .padding().background(.background, in: RoundedRectangle(cornerRadius: 16))
+        .onChange(of: answer.text) { _, _ in showInformation = false }
+    }
+}
+
+struct GoogleSearchSuggestions: UIViewRepresentable {
+    let html: String
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        let view = WKWebView(frame: .zero, configuration: configuration)
+        view.navigationDelegate = context.coordinator
+        view.isOpaque = false
+        return view
+    }
+
+    func updateUIView(_ view: WKWebView, context: Context) {
+        guard context.coordinator.html != html else { return }
+        context.coordinator.html = html
+        view.loadHTMLString(html, baseURL: URL(string: "https://www.google.com"))
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        var html: String?
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if navigationAction.navigationType == .linkActivated {
+                if let url = navigationAction.request.url,
+                   ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
+                    UIApplication.shared.open(url)
+                }
+                decisionHandler(.cancel)
+            } else {
+                decisionHandler(navigationAction.request.url?.scheme == "about" ? .allow : .cancel)
             }
         }
     }

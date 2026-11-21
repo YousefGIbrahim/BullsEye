@@ -11,3 +11,8 @@ __pycache__/
 *.arworldmap
 Bullseye-campus-package*.json
 
+# Optional local Gemini credentials; app-entered keys live only in Keychain.
+GeminiSecrets.plist
+GeminiSecrets.json
+GeminiSecrets.xcconfig
+*.secrets.json

@@ -11,7 +11,7 @@ let package = Package(
             "AudioController.swift", "AudioSessionCoordinator.swift", "CaptureView.swift", "MappingViews.swift", "ServiceMatcher.swift",
             "StudentViews.swift", "Suggestions.swift", "Tracking.swift", "AutomaticGuidance.swift", "RoomEditor.swift",
             "BullseyeIcon60@2x.png", "BullseyeIcon60@3x.png", "BullseyeIcon76@2x.png", "BullseyeIcon83.5@2x.png"
-        ], sources: ["Models.swift", "TurnGuidance.swift"]),
+        ], sources: ["Models.swift", "TurnGuidance.swift", "GeminiClient.swift"]),
         .testTarget(name: "BullseyeCoreTests", dependencies: ["BullseyeCore"], path: "Verification")
     ]
 )

@@ -38,7 +38,7 @@ Guidance pauses at an elevator transfer. Confirm the displayed floor **after exi
 
 ### Student guidance
 
-Search by building name/code, room number or comma-separated aliases. A number shared across buildings returns a choice. Exact numbered queries remain local. Dictated text is editable; tap Search after speaking. Only one push-to-talk recording runs at a time, with a 20-second limit.
+Search by building name/code, room number or comma-separated aliases. A number shared across buildings returns a choice. Numbered queries also use Gemini web search when a key is configured. Dictated text is editable; tap Search after speaking. Only one push-to-talk recording runs at a time, with a 20-second limit.
 
 Choose a named start. Step-free excludes closed links, unverified links, stairs and links not explicitly verified step-free. All route modes exclude unverified/closed connections. Routing uses directed shortest-path costs from captured horizontal distances where available; manual segments use equal costs. The graphic is a labeled ordered-stop schematic, not an ENB floor plan or GPS view.
 
@@ -66,44 +66,22 @@ The bundled directory was checked against these exact official pages on 2026-11-
 
 Ask “Where can I rent a suit?” or type SVC2060. Bullseye shows the local official facts and source. **Open walking directions** hands off to the building, not room 2060. SVC indoor coverage is explicitly unavailable. Maps walking routes are not represented as verified step-free. The final Apple Maps item/arrival must still be checked on the real iPhone before filming.
 
-## Optional live service matching proxy
+## Gemini service search on iPhone
 
-Python 3.10+; standard library only. API use is optional and requires separate OpenAI API billing. Create a host-only key at [OpenAI API keys](https://platform.openai.com/api-keys). Never put it in the app, Xcode build settings, tracked files, a screenshot or logs.
+The app calls Gemini directly over HTTPS in both Debug and Release builds. No Mac server is required.
 
-From the repository root:
+1. Create a key in [Google AI Studio](https://aistudio.google.com/apikey).
+2. Open Bullseye → **AI settings**, paste it into **Gemini API key**, and tap **Save key**.
+3. Tap **Test connection**. This makes a real sample request and verifies Google Search grounding and reports authentication, quota, model-access, connection, or missing-source errors.
+4. Return Home and search or dictate a campus-service need. Room-number queries also use web search when a key is configured.
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r proxy/requirements.txt
-read -s 'OPENAI_API_KEY?OpenAI API key: '
-export OPENAI_API_KEY
-export OPENAI_MODEL=gpt-4.1-mini
-export BULLSEYE_HOST=0.0.0.0
-export BULLSEYE_PORT=8787
-python proxy/server.py
-```
+The default model is `gemini-3.5-flash-lite`; the model ID is editable for your project. Gemini receives the search text and uses Google Search grounding, preferring official USF sources. Web answers display citations, source links, and Google search suggestions. Answers without search queries and usable sources are rejected rather than presented as verified web results. Offline, missing-key, timeout, rejected, and malformed responses leave the local directory available. Web answers do not create saved rooms or navigation routes. Maps, navigation, Apple speech recognition, and spoken directions do not require a Gemini key. Web search can answer campus questions and locate publicly documented rooms beyond the bundled directory. Indoor guidance still requires a saved, published room; it does not infer a route from a web page.
 
-The `read` command above is for macOS's default zsh and does not echo the key. `proxy/.env.example` documents nonsecret configuration; the server reads environment variables, not an automatically loaded .env file. To run without AI, omit the key and the server returns local fallback.
+The entered key is stored in the device’s Keychain with device-only accessibility. No source file contains it, and it is excluded from map exports. **Remove key** deletes it. Keep keys out of screenshots and source code. `.env`, `.env.*` (except the example), `GeminiSecrets.plist`, `GeminiSecrets.json`, `GeminiSecrets.xcconfig`, and `*.secrets.json` are ignored for optional local notes/configuration; the app does not load those files. Git ignore rules do not protect credentials bundled into an app or already committed.
 
-In a second terminal:
+The optional Python proxy in `proxy/` also uses Gemini now, but the iPhone app does not use it. To run it separately, export `GEMINI_API_KEY` and optionally `GEMINI_MODEL` in your shell, then run `python3 proxy/server.py`. It reads environment variables, not `.env` files. Without a key it serves local matches. Request and exception bodies are not logged.
 
-```sh
-curl --silent --show-error http://127.0.0.1:8787/health
-curl --silent --show-error http://127.0.0.1:8787/search \
-  -H 'Content-Type: application/json' \
-  --data '{"query":"Where can I rent a suit?"}'
-```
-
-Health returns `status: ok` and whether a key is configured; it does not claim successful API authentication. A successful real API match returns `live: true`. A no-key, timeout, malformed/refused response or API failure uses local fallback with `live: false`.
-
-In a **Debug** app build, scroll Home → **Debug settings**. Set `http://Your-Mac.local:8787` using the Mac's actual local hostname, then tap **Check proxy health** on the physical iPhone. The Mac and phone must be on the same trusted network. `localhost` on iPhone means the iPhone, not the Mac. Allow the Mac firewall connection and iOS Local Network permission. Campus Wi-Fi may isolate clients; use a trusted hotspot/shared network if health fails. Hosted proxy access must use HTTPS.
-
-Only query text and the two public service records go to the proxy/API. The model has no tools, map data, camera access or device data. Responses API Structured Outputs limits it to an allowed service ID, clarification or no match, and the app validates again before displaying local facts. Queries are limited to 300 characters, bodies to 2 KB, output tokens to 150, concurrency to two and requests to 30/minute. Request/exception logging is disabled. The demo server is intended for a trusted team network; put authentication and TLS in front of any public deployment.
-
-The app falls back after an 8-second request timeout. Debug diagnostics distinguish validated live AI from local fallback without logging query text. Release builds use the local directory. `Info-Debug.plist` permits local networking only; `Info-Release.plist` has no ATS exception. No arbitrary-load exception is enabled.
-
-Implementation references: [Responses Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses), [GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
+References: [Gemini API](https://ai.google.dev/api/generate-content), [Gemini models](https://ai.google.dev/gemini-api/docs/models).
 
 ## Checks and evidence
 
