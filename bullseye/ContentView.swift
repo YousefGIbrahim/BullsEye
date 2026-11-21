@@ -192,6 +192,13 @@ struct WebAnswerView: View {
             Label(answer.locationTitle, systemImage: "mappin.circle.fill")
                 .font(.title2.bold())
                 .fixedSize(horizontal: false, vertical: true)
+            if let directionsURL = answer.directionsURL {
+                Link(destination: directionsURL) {
+                    Label("Get directions", systemImage: "figure.walk")
+                        .font(.headline).frame(minHeight: 44)
+                }
+                .accessibilityHint("Opens Apple Maps with walking directions to the building.")
+            }
             DisclosureGroup(isExpanded: $showInformation) {
                 VStack(alignment: .leading, spacing: 12) {
                     Label("Web answer · Google Search", systemImage: "globe").font(.subheadline)
