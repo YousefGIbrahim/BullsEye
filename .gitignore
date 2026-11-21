@@ -1,0 +1,13 @@
+.DS_Store
+DerivedData/
+.build/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.xcuserstate
+*.arworldmap
+Bullseye-campus-package*.json
+

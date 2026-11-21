@@ -1,0 +1,5 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: com.yousefibrahimpersonalteam.bullseye
+Application is not responding
+Application pid: 12988

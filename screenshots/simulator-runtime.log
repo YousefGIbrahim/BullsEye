@@ -1,0 +1,65 @@
+2026-11-21 13:33:13.205482-0500 [12988:182102] [XPC] [C:1] Ignoring activation message because no connection exists for 1
+
+2026-11-21 13:33:15.390743-0500 [12988:182108] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+
+2026-11-21 13:33:15.408169-0500 [12988:181684] [XPCErrors] non-launching port is incompatible with service identifier "com.apple.PointerUI.pointeruid.default-service"
+
+2026-11-21 13:33:15.413435-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:15.415543-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:15.684593-0500 [12988:182112] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+
+objc[12988]: Class UIAccessibilityLoaderWebShared is implemented in both /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.2.8117.0.vL2o96/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.2.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x10734c310) and /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.2.8117.0.vL2o96/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.2.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x1073c8398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+
+2026-11-21 13:33:18.251431-0500 [12988:181684] [AXValidations] AX Safe category class 'SLHighlightDisambiguationPillViewAccessibility' was not found!
+
+2026-11-21 13:33:47.046387-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:47.776233-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:47.776331-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:47.843250-0500 [12988:182113] [as_client] AVAudioSessionImpl_Simulator.mm:139   Unsupported property: SupportsInterruptionEndedAfterActivationError
+
+2026-11-21 13:33:47.900964-0500 [12988:181684] [AVAudioSession Hang Risk]     AVAudioSession_iOS.mm:978   :::____message__:This method can lead to UI unresponsiveness if called on the main thread. Consider using the asynchronous activate/deactivate API instead for calls from the main thread.
+
+2026-11-21 13:33:48.248979-0500 [12988:181684] [plugin] AddInstanceForFactory: No factory registered for id <CFUUID 0x111857ee0> F8BB1C28-BAE8-11D6-9C31-00039315CD46
+
+2026-11-21 13:33:52.602822-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:53.091780-0500 [12988:181684] [AVAudioSession Hang Risk]     AVAudioSession_iOS.mm:978   :::____message__:This method can lead to UI unresponsiveness if called on the main thread. Consider using the asynchronous activate/deactivate API instead for calls from the main thread.
+
+2026-11-21 13:33:53.098486-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:53.098618-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:59.205585-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:59.760215-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:59.760313-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:33:59.769030-0500 [12988:181684] [AVAudioSession Hang Risk]     AVAudioSession_iOS.mm:978   :::____message__:This method can lead to UI unresponsiveness if called on the main thread. Consider using the asynchronous activate/deactivate API instead for calls from the main thread.
+
+2026-11-21 13:34:08.532105-0500 [12988:181684] [Invalid Configuration] Picker: the selection "nil" is invalid and does not have an associated tag, this will give undefined results.
+
+2026-11-21 13:34:08.532274-0500 [12988:181684] [Invalid Configuration] Picker: the selection "nil" is invalid and does not have an associated tag, this will give undefined results.
+
+2026-11-21 13:34:08.785950-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:34:09.263894-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:34:09.264008-0500 [12988:181684] [API] cannot add handler to 0 from 0 - dropping
+
+2026-11-21 13:34:29.911279-0500 [12988:181684] [Foundation.IO] Could not locate file 'default-binaryarchive.metallib' in bundle.
+
+2026-11-21 13:34:29.994158-0500 [12988:181684] [Assets] asset string 'engine:throttleGhosted.rematerial' parse failed: Invalid asset path: Unknown asset type suffix 'engine:throttleGhosted.rematerial'
+
+2026-11-21 13:34:30.377146-0500 [12988:181684] fopen failed for data file: errno = 2 (No such file or directory)
+
+2026-11-21 13:34:30.851022-0500 [12988:185087] fopen failed for data file: errno = 2 (No such file or directory)
+
+2026-11-21 13:34:31.338457-0500 [12988:181684] [RuntimeIssues] EnvironmentResource with no skybox texture is no longer supported. Please use ImageBasedLightResource instead.
+
+2026-11-21 13:34:34.263473-0500 [12988:181684] [AVAudioSession Hang Risk]     AVAudioSession_iOS.mm:978   :::____message__:This method can lead to UI unresponsiveness if called on the main thread. Consider using the asynchronous activate/deactivate API instead for calls from the main thread.
