@@ -4,7 +4,15 @@ import RealityKit
 import AVFoundation
 import Observation
 
+// Decoded on a worker task, then exclusively used by the main-actor session.
+private struct LoadedWorldMap: @unchecked Sendable {
+    let world: ARWorldMap
+    nonisolated init(world: ARWorldMap) { self.world = world }
+}
+
 @MainActor @Observable final class TrackingController {
+    @ObservationIgnored private var cachedMapData: Data?
+    @ObservationIgnored private var cachedWorldMap: ARWorldMap?
     @ObservationIgnored private var cameraView: ARView?
     var view: ARView {
         if let cameraView { return cameraView }
@@ -60,12 +68,29 @@ import Observation
         if restore {
             guard let data = zone.worldMap else { status = "No saved AR map for this zone. Use manual guidance."; return }
             do {
-                guard let world = try NSKeyedUnarchiver.unarchivedObject(ofClass: ARWorldMap.self, from: data) else {
-                    throw DataIssue.message("Unreadable AR map.")
+                status = "Loading saved scan"
+                let world: ARWorldMap
+                if cachedMapData == data, let cachedWorldMap {
+                    world = cachedWorldMap
+                } else {
+                    let decoded = try await Task.detached(priority: .userInitiated) {
+                        guard let world = try NSKeyedUnarchiver.unarchivedObject(ofClass: ARWorldMap.self, from: data) else {
+                            throw CocoaError(.coderReadCorrupt)
+                        }
+                        return LoadedWorldMap(world: world)
+                    }.value
+                    guard !Task.isCancelled, token == generation else { return }
+                    world = decoded.world
+                    cachedMapData = data
+                    cachedWorldMap = world
                 }
                 configuration.initialWorldMap = world
                 restored = true
-            } catch { status = "Saved AR map could not load. Use manual guidance."; return }
+            } catch {
+                guard !Task.isCancelled, token == generation else { return }
+                status = "Saved AR map could not load. Use manual guidance."
+                return
+            }
         }
         zoneID = zone.id
         status = restore ? "Finding your position · scan the surrounding hallway" : "Preparing tracking · move slowly"
@@ -97,7 +122,18 @@ import Observation
         } else {
             normal = false; mapReady = false; stableSince = nil
             position = nil; forward = nil
-            status = restored ? "Finding your position · scan nearby walls and signs" : "Tracking limited · move slowly in good light"
+            switch frame.camera.trackingState {
+            case .limited(.initializing):
+                status = "Starting camera tracking · hold the phone steady"
+            case .limited(.relocalizing):
+                status = "Camera active · matching saved scan. Slowly look at familiar doors and signs."
+            case .limited(.excessiveMotion):
+                status = "Move the phone more slowly to restore tracking"
+            case .limited(.insufficientFeatures):
+                status = "Point toward well-lit doors and signs, rather than a blank wall"
+            default:
+                status = "Tracking unavailable · keep the camera uncovered"
+            }
         }
     }
     func saveWorldMap() async throws -> Data {

@@ -259,7 +259,7 @@ struct AutomaticGuidanceView: View {
                     Text(navigator.zoneName).font(.caption)
                     Label(navigator.instruction, systemImage: navigator.symbol).font(.title2.bold())
                         .accessibilityAddTraits(.updatesFrequently)
-                    Text(navigator.detail).font(.subheadline)
+                    Text(navigator.loading ? navigator.tracker.status : navigator.detail).font(.subheadline)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading).padding()
                 .foregroundStyle(.white).background(.black.opacity(0.8))
@@ -301,8 +301,12 @@ struct AutomaticGuidanceView: View {
             .onDisappear { navigator.stop() }
             .onChange(of: voiceEnabled) { _, enabled in navigator.voiceEnabled = enabled }
             .onChange(of: scenePhase) { _, phase in
-                if phase != .active { navigator.stop() }
-                else { Task { await navigator.start(map: map, preferredZone: navigator.tracker.zoneID) } }
+                // Temporary inactive states (permission prompts, Control Center)
+                // must not discard localization and restart the saved map.
+                if phase == .background { navigator.stop() }
+                else if phase == .active && !navigator.loading && !navigator.tracker.active {
+                    Task { await navigator.start(map: map, preferredZone: navigator.tracker.zoneID) }
+                }
             }
             .task {
                 navigator.voiceEnabled = voiceEnabled
